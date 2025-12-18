@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.DayPrice
 import dev.abhinav.stocktracker.model.StockPriceResponseItem
-import dev.abhinav.stocktracker.model.StockUiState
 import dev.abhinav.stocktracker.repository.StockRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -120,3 +119,16 @@ class StockPriceHistoryViewModel @Inject constructor(
         }
     }
 }
+
+data class StockUiState(
+    val symbol: String = "",
+    val currentPrice: String = "",
+    val changePercent: String = "",
+    val isPositive: Boolean = true,
+    val companyName: String = "",
+    val exchange: String = "",
+    val priceHistory: List<DayPrice> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val selectedTab: Int = 0
+)
