@@ -1,4 +1,4 @@
-package dev.abhinav.stocktracker.components
+package dev.abhinav.stocktracker.components.stock
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

@@ -1,4 +1,4 @@
-package dev.abhinav.stocktracker.components
+package dev.abhinav.stocktracker.components.stock
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -16,26 +16,25 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.abhinav.stocktracker.model.DayPrice
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import dev.abhinav.stocktracker.model.StockUiState
+import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
 
 @Composable
-fun StockPriceScreen() {
-    val priceHistory = listOf(
-        DayPrice("Wednesday", "Today", "$1,200.00", "$1,240.50", "$1,250.10", "$1,190.80", "", "2.4", true),
-        DayPrice("Tuesday", "Yesterday", "$1,195.50", "$1,210.00", "$1,215.75", "$1,188.20","","1.3", false),
-        DayPrice("Monday", "2 Days ago", "$1,205.00", "$1,195.00", "$1,208.50", "$1,190.00", "","0.76", true)
-    )
-
+fun StockPriceContent(
+    uiState: StockUiState,
+    viewModel: StockPriceHistoryViewModel = hiltViewModel()
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
-            .padding(20.dp)
+            .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         // Header Section
         Text(
-            text = "TSLA",
+            text = uiState.symbol,
             fontSize = 40.sp,
             fontWeight = FontWeight.Bold,
             color = Color.Black
@@ -46,7 +45,7 @@ fun StockPriceScreen() {
             modifier = Modifier.padding(top = 4.dp)
         ) {
             Text(
-                text = "$1,240.50",
+                text = uiState.currentPrice,
                 fontSize = 36.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -56,10 +55,10 @@ fun StockPriceScreen() {
 
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = Color(0xFFE8F741)
+                color = if (uiState.isPositive) Color(0xFFE8F741) else Color(0xFFFFCDD2)
             ) {
                 Text(
-                    text = "↗ +2.4%",
+                    text = uiState.changePercent,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -69,29 +68,29 @@ fun StockPriceScreen() {
         }
 
         Text(
-            text = "Tesla, Inc. • NASDAQ",
+            text = "${uiState.companyName} • ${uiState.exchange}",
             fontSize = 14.sp,
             color = Color.Gray,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(vertical = 4.dp)
         )
 
         // Tab Buttons
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
+                .padding(vertical = 12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             TabButton(
                 text = "3 Days",
-                isSelected = true,
-                onClick = {  },
+                isSelected = uiState.selectedTab == 0,
+                onClick = { viewModel.selectTab(0) },
                 modifier = Modifier.weight(1f)
             )
             TabButton(
                 text = "5 Days",
-                isSelected = false,
-                onClick = {  },
+                isSelected = uiState.selectedTab == 1,
+                onClick = { viewModel.selectTab(1) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -103,10 +102,15 @@ fun StockPriceScreen() {
             fontWeight = FontWeight.SemiBold,
             color = Color(0xFF7D8B6B),
             letterSpacing = 1.sp,
-            modifier = Modifier.padding(bottom = 16.dp)
+            modifier = Modifier.padding(vertical = 8.dp)
         )
 
         // Price Cards
+        val priceHistory = if (uiState.selectedTab == 0) {
+            uiState.priceHistory.take(3)
+        } else {
+            uiState.priceHistory
+        }
         priceHistory.forEach { dayPrice ->
             StockPriceCard(dayPrice)
             Spacer(modifier = Modifier.height(12.dp))
@@ -141,6 +145,19 @@ fun TabButton(
 
 @Preview
 @Composable
-fun StockPriceScreenPreview() {
-    StockPriceScreen()
+fun StockPriceContentPreview() {
+    StockPriceContent(
+        uiState = StockUiState(
+            symbol = "TSLA",
+            currentPrice = "$650.00",
+            changePercent = "+2.5%",
+            isPositive = true,
+            companyName = "Tesla, Inc.",
+            exchange = "NASDAQ",
+            priceHistory = listOf(),
+            selectedTab = 0,
+            isLoading = false,
+            error = null
+        )
+    )
 }
