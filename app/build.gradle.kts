@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.daggerHilt)
     alias(libs.plugins.kotlinParcelize)
     alias(libs.plugins.secretsGradle)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -85,4 +86,8 @@ dependencies {
 
     // Generative AI
     implementation(libs.generativeai)
+
+    //Room DB
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 }

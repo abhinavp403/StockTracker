@@ -8,9 +8,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +33,14 @@ fun WatchlistContent(
     searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     watchlistStocks: List<WatchlistStock>,
-    onRemoveStock: (String) -> Unit
+    lastUpdated: String?,
+    onRemoveStock: (String) -> Unit,
+    onRefresh: () -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .padding(horizontal = 16.dp)
     ) {
         // Search Bar
         SearchBar(
@@ -48,24 +56,51 @@ fun WatchlistContent(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = "Your Watchlist",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFD4F5E9)
-            ) {
+            Column {
                 Text(
-                    text = "${watchlistStocks.size} Assets",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF10B981),
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    text = "Your Watchlist",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
+                if (lastUpdated != null) {
+                    Text(
+                        text = lastUpdated,
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(
+                    onClick = onRefresh,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = "Refresh",
+                        tint = Color(0xFF10B981),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFD4F5E9)
+                ) {
+                    Text(
+                        text = "${watchlistStocks.size} Assets",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF10B981),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
+                }
             }
         }
 
@@ -99,6 +134,8 @@ fun PreviewWatchlistContent() {
         searchQuery = "",
         onSearchQueryChange = {},
         watchlistStocks = sampleStocks,
-        onRemoveStock = {}
+        lastUpdated = "",
+        onRemoveStock = {},
+        onRefresh = {}
     )
 }

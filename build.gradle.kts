@@ -6,4 +6,5 @@ plugins {
     alias(libs.plugins.daggerHilt) apply false
     alias(libs.plugins.kotlinParcelize) apply false
     alias(libs.plugins.secretsGradle) apply false
+    alias(libs.plugins.ksp) apply false
 }

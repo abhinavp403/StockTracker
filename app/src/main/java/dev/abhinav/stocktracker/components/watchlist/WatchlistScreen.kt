@@ -20,50 +20,45 @@ fun WatchlistScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     Scaffold { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF8F9FA))
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFF8F9FA))
-            ) {
-                when {
-                    uiState.isLoading && uiState.watchlistStocks.isEmpty() -> {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
+            when {
+                uiState.isLoading && uiState.watchlistStocks.isEmpty() -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                uiState.error != null && uiState.watchlistStocks.isEmpty() -> {
+                    Column(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "Error: ${uiState.error}",
+                            color = Color.Red,
+                            textAlign = TextAlign.Center
                         )
-                    }
-                    uiState.error != null && uiState.watchlistStocks.isEmpty() -> {
-                        Column(
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = "Error: ${uiState.error}",
-                                color = Color.Red,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(onClick = { /* Retry logic */ }) {
-                                Text("Retry")
-                            }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.refreshAllStocks() }) {
+                            Text("Retry")
                         }
                     }
-                    else -> {
-                        WatchlistContent(
-                            searchQuery = searchQuery,
-                            onSearchQueryChange = { searchQuery = it },
-                            watchlistStocks = uiState.watchlistStocks,
-                            onRemoveStock = { viewModel.removeStock(it) }
-                        )
-                    }
+                }
+                else -> {
+                    WatchlistContent(
+                        searchQuery = searchQuery,
+                        onSearchQueryChange = { searchQuery = it },
+                        watchlistStocks = uiState.watchlistStocks,
+                        lastUpdated = uiState.lastUpdated,
+                        onRemoveStock = { viewModel.removeStock(it) },
+                        onRefresh = { viewModel.refreshAllStocks() }
+                    )
                 }
             }
         }

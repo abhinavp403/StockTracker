@@ -4,19 +4,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.WatchlistStock
-import dev.abhinav.stocktracker.repository.StockRepository
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import dev.abhinav.stocktracker.repository.StockWatchlistRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
 class StockWatchlistViewModel @Inject constructor(
-    private val repository: StockRepository
+    private val repository: StockWatchlistRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(WatchlistUiState())
@@ -25,95 +26,83 @@ class StockWatchlistViewModel @Inject constructor(
     private val symbols = listOf("NVDA", "TSLA", "AMZN", "AAPL", "MSFT")
 
     init {
-        fetchAllStockProfiles()
+        observeWatchlist()
+        checkAndRefreshData()
     }
 
-    private fun fetchAllStockProfiles() {
+    private fun observeWatchlist() {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+            repository.watchlistStocks.collect { entities ->
+                val stocks = entities.map { entity ->
+                    WatchlistStock(
+                        symbol = entity.symbol,
+                        companyName = entity.companyName,
+                        price = formatPrice(entity.price),
+                        changePercent = formatPercent(entity.changePercentage),
+                        isPositive = entity.changePercentage >= 0
+                    )
+                }
 
-            val stocks = mutableListOf<WatchlistStock>()
+                val lastUpdateTime = entities.maxOfOrNull { it.lastUpdated }
+                val lastUpdateString = lastUpdateTime?.let {
+                    val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+                    "Last updated: ${sdf.format(Date(it))}"
+                }
 
-            // Fetch all stocks in parallel
-            val deferredStocks = symbols.map { symbol ->
-                async {
-                    repository.getStockProfile(symbol).fold(
-                        onSuccess = { response ->
-                            if (response.isNotEmpty()) {
-                                val item = response[0]
-                                WatchlistStock(
-                                    symbol = item.symbol,
-                                    companyName = item.companyName,
-                                    price = formatPrice(item.price),
-                                    changePercent = formatPercent(item.changePercentage),
-                                    isPositive = item.changePercentage >= 0
-                                )
-                            } else {
-                                println("Empty response for $symbol")
-                                null
-                            }
-                        },
-                        onFailure = { exception ->
-                            println("Failed to fetch $symbol: ${exception.message}")
-                            null
-                        }
+                _uiState.update {
+                    it.copy(
+                        watchlistStocks = stocks,
+                        lastUpdated = lastUpdateString
                     )
                 }
             }
-
-            // Wait for all to complete and filter out nulls
-            stocks.addAll(deferredStocks.awaitAll().filterNotNull())
-
-            _uiState.update {
-                it.copy(
-                    watchlistStocks = stocks,
-                    isLoading = false
-                )
-            }
-
-            println("Fetched ${stocks.size} stocks successfully")
         }
     }
 
-    fun fetchStockProfile(symbol: String) {
+    private fun checkAndRefreshData() {
+        viewModelScope.launch {
+            val shouldRefresh = repository.shouldRefreshData()
+
+            if (shouldRefresh) {
+                refreshAllStocks()
+            }
+        }
+    }
+
+    fun refreshAllStocks() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            repository.getStockProfile(symbol).fold(
-                onSuccess = { response ->
-                    if (response.isNotEmpty()) {
-                        val item = response[0]
-                        val newStock = WatchlistStock(
-                            symbol = item.symbol,
-                            companyName = item.companyName,
-                            price = formatPrice(item.price),
-                            changePercent = formatPercent(item.changePercentage),
-                            isPositive = item.changePercentage >= 0
-                        )
-
-                        val updatedList = _uiState.value.watchlistStocks.toMutableList()
-                        updatedList.add(newStock)
-
-                        _uiState.update {
-                            it.copy(
-                                watchlistStocks = updatedList,
-                                isLoading = false
-                            )
-                        }
-                    } else {
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = "No data found for $symbol"
-                            )
-                        }
-                    }
+            repository.refreshAllStocks(symbols).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isLoading = false) }
+                    println("Successfully refreshed all stocks")
                 },
                 onFailure = { exception ->
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = exception.message ?: "Failed to fetch stock profile"
+                            error = exception.message ?: "Failed to refresh stocks"
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    fun addStock(symbol: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+
+            repository.refreshStockProfile(symbol).fold(
+                onSuccess = {
+                    _uiState.update { it.copy(isLoading = false) }
+                },
+                onFailure = { exception ->
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Failed to add stock"
                         )
                     }
                 }
@@ -122,12 +111,13 @@ class StockWatchlistViewModel @Inject constructor(
     }
 
     fun removeStock(symbol: String) {
-        val updatedList = _uiState.value.watchlistStocks.filter { it.symbol != symbol }
-        _uiState.update { it.copy(watchlistStocks = updatedList) }
+        viewModelScope.launch {
+            repository.removeStock(symbol)
+        }
     }
 
     private fun formatPrice(price: Double): String {
-        return "${String.format("%.2f", price)}"
+        return "$${String.format("%.2f", price)}"
     }
 
     private fun formatPercent(percent: Double): String {
@@ -139,5 +129,6 @@ class StockWatchlistViewModel @Inject constructor(
 data class WatchlistUiState(
     val watchlistStocks: List<WatchlistStock> = emptyList(),
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val lastUpdated: String? = null
 )
