@@ -1,0 +1,71 @@
+package dev.abhinav.stocktracker.components.watchlist
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import dev.abhinav.stocktracker.viewmodel.StockWatchlistViewModel
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun WatchlistScreen(
+    viewModel: StockWatchlistViewModel
+) {
+    var searchQuery by remember { mutableStateOf("") }
+    val uiState by viewModel.uiState.collectAsState()
+
+    Scaffold { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFF8F9FA))
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFF8F9FA))
+            ) {
+                when {
+                    uiState.isLoading && uiState.watchlistStocks.isEmpty() -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    uiState.error != null && uiState.watchlistStocks.isEmpty() -> {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .padding(16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Error: ${uiState.error}",
+                                color = Color.Red,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Button(onClick = { /* Retry logic */ }) {
+                                Text("Retry")
+                            }
+                        }
+                    }
+                    else -> {
+                        WatchlistContent(
+                            searchQuery = searchQuery,
+                            onSearchQueryChange = { searchQuery = it },
+                            watchlistStocks = uiState.watchlistStocks,
+                            onRemoveStock = { viewModel.removeStock(it) }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
