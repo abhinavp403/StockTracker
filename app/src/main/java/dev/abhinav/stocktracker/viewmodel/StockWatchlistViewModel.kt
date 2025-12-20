@@ -92,6 +92,15 @@ class StockWatchlistViewModel @Inject constructor(
 
     fun addStock(symbol: String) {
         viewModelScope.launch {
+            // Check if stock already exists
+            val exists = _uiState.value.watchlistStocks.any { it.symbol == symbol }
+            if (exists) {
+                _uiState.update {
+                    it.copy(error = "$symbol is already in your watchlist")
+                }
+                return@launch
+            }
+
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             repository.refreshStockProfile(symbol).fold(
@@ -102,12 +111,16 @@ class StockWatchlistViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isLoading = false,
-                            error = exception.message ?: "Failed to add stock"
+                            error = "Failed to add stock"
                         )
                     }
                 }
             )
         }
+    }
+
+    fun clearError() {
+        _uiState.update { it.copy(error = null) }
     }
 
     fun removeStock(symbol: String) {

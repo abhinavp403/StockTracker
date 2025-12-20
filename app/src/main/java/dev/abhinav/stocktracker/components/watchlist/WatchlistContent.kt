@@ -35,7 +35,8 @@ fun WatchlistContent(
     watchlistStocks: List<WatchlistStock>,
     lastUpdated: String?,
     onRemoveStock: (String) -> Unit,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    onAddStock: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -45,7 +46,8 @@ fun WatchlistContent(
         // Search Bar
         SearchBar(
             query = searchQuery,
-            onQueryChange = onSearchQueryChange
+            onQueryChange = onSearchQueryChange,
+            onSearch = onAddStock
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -118,6 +120,8 @@ fun WatchlistContent(
                 )
             }
         }
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -136,6 +140,7 @@ fun PreviewWatchlistContent() {
         watchlistStocks = sampleStocks,
         lastUpdated = "",
         onRemoveStock = {},
-        onRefresh = {}
+        onRefresh = {},
+        onAddStock = {}
     )
 }
