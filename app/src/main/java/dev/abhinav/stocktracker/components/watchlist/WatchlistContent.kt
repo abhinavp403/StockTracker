@@ -36,7 +36,8 @@ fun WatchlistContent(
     lastUpdated: String?,
     onRemoveStock: (String) -> Unit,
     onRefresh: () -> Unit,
-    onAddStock: (String) -> Unit
+    onAddStock: (String) -> Unit,
+    onStockClick: (String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -116,7 +117,8 @@ fun WatchlistContent(
             items(watchlistStocks, key = { it.symbol }) { stock ->
                 WatchlistItem(
                     stock = stock,
-                    onRemoveClick = { onRemoveStock(stock.symbol) }
+                    onRemoveClick = { onRemoveStock(stock.symbol) },
+                    onItemClick = { onStockClick(stock.symbol) }
                 )
             }
         }
@@ -141,6 +143,7 @@ fun PreviewWatchlistContent() {
         lastUpdated = "",
         onRemoveStock = {},
         onRefresh = {},
-        onAddStock = {}
+        onAddStock = {},
+        onStockClick = {}
     )
 }

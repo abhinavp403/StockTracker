@@ -1,5 +1,6 @@
 package dev.abhinav.stocktracker.components.watchlist
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,10 +20,13 @@ import dev.abhinav.stocktracker.model.WatchlistStock
 @Composable
 fun WatchlistItem(
     stock: WatchlistStock,
-    onRemoveClick: () -> Unit
+    onRemoveClick: () -> Unit,
+    onItemClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onItemClick),
         shape = RoundedCornerShape(16.dp),
         color = Color.White,
         shadowElevation = 1.dp
@@ -116,6 +120,7 @@ fun WatchlistItemPreview() {
             changePercent = "1.25%",
             isPositive = true
         ),
-        onRemoveClick = {}
+        onRemoveClick = {},
+        onItemClick = {}
     )
 }

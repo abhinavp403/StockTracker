@@ -1,5 +1,6 @@
 package dev.abhinav.stocktracker.components.stock
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -16,12 +17,17 @@ import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
 @Composable
 fun StockPriceScreen(
     viewModel: StockPriceHistoryViewModel,
-    symbol: String
+    symbol: String,
+    onBackClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(symbol) {
         viewModel.fetchStockData(symbol)
+    }
+
+    BackHandler {
+        onBackClick.invoke()
     }
 
     Box(
@@ -54,7 +60,7 @@ fun StockPriceScreen(
                 }
             }
             else -> {
-                StockPriceContent(uiState)
+                StockPriceContent(uiState, viewModel)
             }
         }
     }
