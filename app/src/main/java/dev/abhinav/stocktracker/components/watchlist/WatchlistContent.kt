@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,7 +38,8 @@ fun WatchlistContent(
     onRemoveStock: (String) -> Unit,
     onRefresh: () -> Unit,
     onAddStock: (String) -> Unit,
-    onStockClick: (String) -> Unit
+    onStockClick: (String) -> Unit,
+    onSortClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -60,18 +62,33 @@ fun WatchlistContent(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text(
-                    text = "Your Watchlist",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Your Watchlist",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+
+                    IconButton(
+                        onClick = onSortClick
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.Sort,
+                            contentDescription = "Sort",
+                            tint = Color(0xFF6B7280)
+                        )
+                    }
+                }
+
                 if (lastUpdated != null) {
                     Text(
                         text = lastUpdated,
                         fontSize = 12.sp,
-                        color = Color.Gray,
-                        modifier = Modifier.padding(top = 2.dp)
+                        color = Color.Gray
                     )
                 }
             }
@@ -144,6 +161,7 @@ fun PreviewWatchlistContent() {
         onRemoveStock = {},
         onRefresh = {},
         onAddStock = {},
-        onStockClick = {}
+        onStockClick = {},
+        onSortClick = {}
     )
 }

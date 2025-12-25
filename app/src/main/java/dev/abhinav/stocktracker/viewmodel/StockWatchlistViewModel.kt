@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.WatchlistStock
 import dev.abhinav.stocktracker.repository.StockWatchlistRepository
+import dev.abhinav.stocktracker.util.SortOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,11 +52,33 @@ class StockWatchlistViewModel @Inject constructor(
 
                 _uiState.update {
                     it.copy(
-                        watchlistStocks = stocks,
+                        watchlistStocks = sortStocks(stocks, it.sortOption),
                         lastUpdated = lastUpdateString
                     )
                 }
             }
+        }
+    }
+
+    fun setSortOption(option: SortOption) {
+        _uiState.update {
+            it.copy(
+                sortOption = option,
+                watchlistStocks = sortStocks(it.watchlistStocks, option)
+            )
+        }
+    }
+
+    private fun sortStocks(stocks: List<WatchlistStock>, sortOption: SortOption): List<WatchlistStock> {
+        return when (sortOption) {
+            SortOption.SYMBOL_ASC -> stocks.sortedBy { it.symbol }
+            SortOption.SYMBOL_DESC -> stocks.sortedByDescending { it.symbol }
+            SortOption.COMPANY_NAME_ASC -> stocks.sortedBy { it.companyName }
+            SortOption.COMPANY_NAME_DESC -> stocks.sortedByDescending { it.companyName }
+            SortOption.PRICE_HIGH_TO_LOW -> stocks.sortedByDescending { it.price }
+            SortOption.PRICE_LOW_TO_HIGH -> stocks.sortedBy { it.price }
+            SortOption.CHANGE_HIGH_TO_LOW -> stocks.sortedByDescending { it.changePercent }
+            SortOption.CHANGE_LOW_TO_HIGH -> stocks.sortedBy { it.changePercent }
         }
     }
 
@@ -143,5 +166,6 @@ data class WatchlistUiState(
     val watchlistStocks: List<WatchlistStock> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val lastUpdated: String? = null
+    val lastUpdated: String? = null,
+    val sortOption: SortOption = SortOption.SYMBOL_ASC
 )

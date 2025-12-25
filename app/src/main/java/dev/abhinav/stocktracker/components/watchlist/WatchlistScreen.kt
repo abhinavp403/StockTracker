@@ -16,6 +16,7 @@ fun WatchlistScreen(
     onStockClick: (String) -> Unit = {}
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var showSortSheet by remember { mutableStateOf(false) }
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
@@ -24,6 +25,18 @@ fun WatchlistScreen(
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             viewModel.clearError()
         }
+    }
+
+    // Sort Bottom Sheet
+    if (showSortSheet) {
+        SortBottomSheet(
+            currentSortOption = uiState.sortOption,
+            onDismiss = { showSortSheet = false },
+            onSortSelected = { option ->
+                viewModel.setSortOption(option)
+                showSortSheet = false
+            }
+        )
     }
 
     Box(
@@ -46,7 +59,8 @@ fun WatchlistScreen(
                     onRemoveStock = { viewModel.removeStock(it) },
                     onRefresh = { viewModel.refreshAllStocks() },
                     onAddStock = { viewModel.addStock(it) },
-                    onStockClick = onStockClick
+                    onStockClick = onStockClick,
+                    onSortClick = { showSortSheet = true }
                 )
             }
         }
