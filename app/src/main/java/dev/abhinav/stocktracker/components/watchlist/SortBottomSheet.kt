@@ -1,25 +1,21 @@
 package dev.abhinav.stocktracker.components.watchlist
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Surface
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,161 +38,76 @@ fun SortBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 16.dp)
+                .padding(horizontal = 20.dp, vertical = 8.dp)
         ) {
             Text(
                 text = "Sort By",
-                fontSize = 20.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black,
-                modifier = Modifier.padding(bottom = 20.dp)
+                modifier = Modifier.padding(bottom = 12.dp)
             )
 
             // Symbol Section
-            Text(
-                text = "SYMBOL",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Gray,
-                letterSpacing = 1.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            SortOption(
-                text = "A → Z",
-                isSelected = currentSortOption == SortOption.SYMBOL_ASC,
-                onClick = { onSortSelected(SortOption.SYMBOL_ASC) }
-            )
-
-            SortOption(
-                text = "Z → A",
-                isSelected = currentSortOption == SortOption.SYMBOL_DESC,
-                onClick = { onSortSelected(SortOption.SYMBOL_DESC) }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            SortRadioRow("SYMBOL (A → Z)", currentSortOption == SortOption.SYMBOL_ASC) {
+                onSortSelected(SortOption.SYMBOL_ASC)
+            }
+            SortRadioRow("SYMBOL (Z → A)", currentSortOption == SortOption.SYMBOL_DESC) {
+                onSortSelected(SortOption.SYMBOL_DESC)
+            }
 
             // Company Name Section
-            Text(
-                text = "COMPANY NAME",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Gray,
-                letterSpacing = 1.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            SortOption(
-                text = "A → Z",
-                isSelected = currentSortOption == SortOption.COMPANY_NAME_ASC,
-                onClick = { onSortSelected(SortOption.COMPANY_NAME_ASC) }
-            )
-
-            SortOption(
-                text = "Z → A",
-                isSelected = currentSortOption == SortOption.COMPANY_NAME_DESC,
-                onClick = { onSortSelected(SortOption.COMPANY_NAME_DESC) }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            SortRadioRow("COMPANY NAME (A → Z)", currentSortOption == SortOption.COMPANY_NAME_ASC) {
+                onSortSelected(SortOption.COMPANY_NAME_ASC)
+            }
+            SortRadioRow("COMPANY NAME (Z → A)", currentSortOption == SortOption.COMPANY_NAME_DESC) {
+                onSortSelected(SortOption.COMPANY_NAME_DESC)
+            }
 
             // Price Section
-            Text(
-                text = "PRICE",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Gray,
-                letterSpacing = 1.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            SortOption(
-                text = "High → Low",
-                isSelected = currentSortOption == SortOption.PRICE_HIGH_TO_LOW,
-                onClick = { onSortSelected(SortOption.PRICE_HIGH_TO_LOW) }
-            )
-
-            SortOption(
-                text = "Low → High",
-                isSelected = currentSortOption == SortOption.PRICE_LOW_TO_HIGH,
-                onClick = { onSortSelected(SortOption.PRICE_LOW_TO_HIGH) }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            SortRadioRow("PRICE (High → Low)", currentSortOption == SortOption.PRICE_HIGH_TO_LOW) {
+                onSortSelected(SortOption.PRICE_HIGH_TO_LOW)
+            }
+            SortRadioRow("PRICE (Low → High)", currentSortOption == SortOption.PRICE_LOW_TO_HIGH) {
+                onSortSelected(SortOption.PRICE_LOW_TO_HIGH)
+            }
 
             // Change % Section
-            Text(
-                text = "CHANGE %",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.Gray,
-                letterSpacing = 1.sp,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            SortOption(
-                text = "High → Low",
-                isSelected = currentSortOption == SortOption.CHANGE_HIGH_TO_LOW,
-                onClick = { onSortSelected(SortOption.CHANGE_HIGH_TO_LOW) }
-            )
-
-            SortOption(
-                text = "Low → High",
-                isSelected = currentSortOption == SortOption.CHANGE_LOW_TO_HIGH,
-                onClick = { onSortSelected(SortOption.CHANGE_LOW_TO_HIGH) }
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
+            SortRadioRow("CHANGE % (High → Low)", currentSortOption == SortOption.CHANGE_HIGH_TO_LOW) {
+                onSortSelected(SortOption.CHANGE_HIGH_TO_LOW)
+            }
+            SortRadioRow("CHANGE % (Low → High)", currentSortOption == SortOption.CHANGE_LOW_TO_HIGH) {
+                onSortSelected(SortOption.CHANGE_LOW_TO_HIGH)
+            }
         }
     }
 }
 
 @Composable
-fun SortOption(
+private fun SortRadioRow(
     text: String,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
-    Surface(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) Color(0xFFE8F5E9) else Color.Transparent,
-        onClick = onClick
+            .height(40.dp)
+            .selectable(
+                selected = isSelected,
+                onClick = onClick,
+                role = Role.RadioButton
+            ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = text,
-                fontSize = 16.sp,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                color = if (isSelected) Color(0xFF10B981) else Color.Black
-            )
-
-            if (isSelected) {
-                Surface(
-                    shape = CircleShape,
-                    color = Color(0xFF10B981),
-                    modifier = Modifier.size(20.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "✓",
-                            fontSize = 12.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-        }
+        RadioButton(
+            selected = isSelected,
+            onClick = null
+        )
+        Text(
+            text = text,
+            color = Color.Black,
+            modifier = Modifier.padding(start = 8.dp)
+        )
     }
 }
