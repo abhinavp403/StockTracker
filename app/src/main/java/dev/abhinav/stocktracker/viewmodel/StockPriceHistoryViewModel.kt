@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.DayPrice
+import dev.abhinav.stocktracker.model.Ohlc
 import dev.abhinav.stocktracker.model.StockPriceResponseItem
 import dev.abhinav.stocktracker.repository.StockRepository
+import dev.abhinav.stocktracker.util.Trend
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,6 +34,18 @@ class StockPriceHistoryViewModel @Inject constructor(
             repository.getStockHistory(symbol).fold(
                 onSuccess = { response ->
                     if (response.isNotEmpty()) {
+                        val ohlcList = response.map {
+                            Ohlc(
+                                open = it.open,
+                                high = it.high,
+                                low = it.low,
+                                close = it.close
+                            )
+                        }
+
+                        val (bestBuy, bestSell, trend) =
+                            calculateBestBuySell(ohlcList, _uiState.value.selectedTab)
+
                         _uiState.update {
                             it.copy(
                                 symbol = response[0].symbol,
@@ -41,6 +55,9 @@ class StockPriceHistoryViewModel @Inject constructor(
                                 companyName = getCompanyName(response[0].symbol),
                                 exchange = "NASDAQ",
                                 priceHistory = mapToDayPrices(response.take(5)),
+                                bestBuyPrice = formatPrice(bestBuy),
+                                bestSellPrice = formatPrice(bestSell),
+                                trend = trend,
                                 isLoading = false
                             )
                         }
@@ -56,6 +73,68 @@ class StockPriceHistoryViewModel @Inject constructor(
                 }
             )
         }
+    }
+
+    private fun calculateBestBuySell(
+        ohlcList: List<Ohlc>,
+        selectedTab: Int
+    ): Triple<Double, Double, Trend> {
+
+        val requiredDays = when (selectedTab) {
+            1 -> 5   // 5 Days tab
+            else -> 3 // Default: 3 Days tab
+        }
+
+        if (ohlcList.size < requiredDays) {
+            return Triple(0.0, 0.0, Trend.NEUTRAL)
+        }
+
+        val recent = ohlcList.take(requiredDays)
+        val latest = recent.first()
+
+        // --- Pivot (latest day still matters most) ---
+        val pivot = (latest.high + latest.low + latest.close) / 3
+
+        val support = (2 * pivot) - latest.high
+        val resistance = (2 * pivot) - latest.low
+
+        // --- Trend detection (scaled by selected range) ---
+        val trend = when {
+            recent.zipWithNext().all { it.first.close < it.second.close } ->
+                Trend.BEARISH
+
+            recent.zipWithNext().all { it.first.close > it.second.close } ->
+                Trend.BULLISH
+
+            else -> Trend.NEUTRAL
+        }
+
+        // --- Volatility over selected range ---
+        val avgRange = recent
+            .map { it.high - it.low }
+            .average()
+
+        val bufferMultiplier = when (selectedTab) {
+            1 -> 0.20   // smoother for 5 days
+            else -> 0.15 // tighter for 3 days
+        }
+
+        val buffer = avgRange * bufferMultiplier
+
+        // --- Final Buy/Sell levels ---
+        val bestBuy = when (trend) {
+            Trend.BULLISH -> support + buffer
+            Trend.BEARISH -> latest.low
+            Trend.NEUTRAL -> support
+        }
+
+        val bestSell = when (trend) {
+            Trend.BULLISH -> resistance
+            Trend.BEARISH -> resistance - buffer
+            Trend.NEUTRAL -> resistance
+        }
+
+        return Triple(bestBuy, bestSell, trend)
     }
 
     private fun mapToDayPrices(items: List<StockPriceResponseItem>): List<DayPrice> {
@@ -86,7 +165,33 @@ class StockPriceHistoryViewModel @Inject constructor(
     }
 
     fun selectTab(tabIndex: Int) {
-        _uiState.update { it.copy(selectedTab = tabIndex) }
+        viewModelScope.launch {
+            val currentHistory = _uiState.value.priceHistory
+            if (currentHistory.isNotEmpty()) {
+                // Reconstruct OHLC list from priceHistory
+                val ohlcList = currentHistory.map { dayPrice ->
+                    Ohlc(
+                        open = dayPrice.open.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0,
+                        high = dayPrice.high.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0,
+                        low = dayPrice.low.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0,
+                        close = dayPrice.close.replace("$", "").replace(",", "").toDoubleOrNull() ?: 0.0
+                    )
+                }
+
+                val (bestBuy, bestSell, trend) = calculateBestBuySell(ohlcList, tabIndex)
+
+                _uiState.update {
+                    it.copy(
+                        selectedTab = tabIndex,
+                        bestBuyPrice = formatPrice(bestBuy),
+                        bestSellPrice = formatPrice(bestSell),
+                        trend = trend
+                    )
+                }
+            } else {
+                _uiState.update { it.copy(selectedTab = tabIndex) }
+            }
+        }
     }
 
     private fun formatPercentSimple(percent: Double): String {
@@ -128,6 +233,9 @@ data class StockUiState(
     val companyName: String = "",
     val exchange: String = "",
     val priceHistory: List<DayPrice> = emptyList(),
+    val bestBuyPrice: String = "",
+    val bestSellPrice: String = "",
+    val trend: Trend = Trend.NEUTRAL,
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedTab: Int = 0

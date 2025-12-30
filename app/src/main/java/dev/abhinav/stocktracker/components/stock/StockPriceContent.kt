@@ -17,6 +17,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import dev.abhinav.stocktracker.util.Trend
 import dev.abhinav.stocktracker.viewmodel.StockUiState
 import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
 
@@ -105,6 +106,15 @@ fun StockPriceContent(
             modifier = Modifier.padding(vertical = 8.dp)
         )
 
+        // Trading Recommendation Card
+        TradingRecommendationCard(
+            bestBuyPrice = uiState.bestBuyPrice,
+            bestSellPrice = uiState.bestSellPrice,
+            trend = uiState.trend
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         // Price Cards
         val priceHistory = if (uiState.selectedTab == 0) {
             uiState.priceHistory.take(3)
@@ -139,6 +149,144 @@ fun TabButton(
             color = if (isSelected) Color.White else Color.Gray,
             modifier = Modifier.padding(vertical = 12.dp),
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun TradingRecommendationCard(
+    bestBuyPrice: String,
+    bestSellPrice: String,
+    trend: Trend
+) {
+    val trendColor = when (trend) {
+        Trend.BULLISH -> Color(0xFF10B981)
+        Trend.BEARISH -> Color(0xFFEF4444)
+        Trend.NEUTRAL -> Color(0xFF6B7280)
+    }
+
+    val trendLabel = when (trend) {
+        Trend.BULLISH -> "Bullish Trend"
+        Trend.BEARISH -> "Bearish Trend"
+        Trend.NEUTRAL -> "Neutral Trend"
+    }
+
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        shadowElevation = 2.dp
+    ) {
+        Column(modifier = Modifier.padding(20.dp)) {
+
+            // Header
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text(
+                        text = "Trading Levels",
+                        fontSize = 13.sp,
+                        color = Color.Gray,
+                        fontWeight = FontWeight.SemiBold
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = trendColor.copy(alpha = 0.12f)
+                    ) {
+                        Text(
+                            text = trendLabel,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = trendColor,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Prices Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+
+                PriceBlock(
+                    label = "BEST BUY",
+                    price = bestBuyPrice,
+                    priceColor = Color(0xFF10B981)
+                )
+
+                PriceBlock(
+                    label = "BEST SELL",
+                    price = bestSellPrice,
+                    priceColor = Color(0xFFEF4444)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Insight
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                color = Color(0xFFF8F9FA)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.Top
+                ) {
+                    Text(
+                        text = "💡",
+                        fontSize = 16.sp,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                    Text(
+                        text = when (trend) {
+                            Trend.BULLISH ->
+                                "Price is trending upward. Buying near support and selling near resistance is favored."
+                            Trend.BEARISH ->
+                                "Downtrend detected. Caution advised, selling near resistance may be safer."
+                            Trend.NEUTRAL ->
+                                "Price is consolidating. Wait for a clearer breakout or rejection."
+                        },
+                        fontSize = 14.sp,
+                        color = Color(0xFF495057),
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PriceBlock(
+    label: String,
+    price: String,
+    priceColor: Color
+) {
+    Column {
+        Text(
+            text = label,
+            fontSize = 11.sp,
+            color = Color(0xFF8B9A7D),
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 0.5.sp
+        )
+        Text(
+            text = price,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = priceColor,
+            modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
