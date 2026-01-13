@@ -3,6 +3,7 @@ package dev.abhinav.stocktracker.components.watchlist
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -127,11 +128,15 @@ fun WatchlistContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Watchlist Items
         LazyColumn(
             modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(
+                top = 16.dp,
+                bottom = 16.dp
+            ),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(watchlistStocks, key = { it.symbol }) { stock ->
@@ -142,8 +147,6 @@ fun WatchlistContent(
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

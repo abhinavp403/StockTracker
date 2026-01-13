@@ -42,7 +42,7 @@ fun SearchBar(
             .height(56.dp),
         placeholder = {
             Text(
-                text = "Search stocks, ETFs, crypto...",
+                text = "Search stocks...",
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
