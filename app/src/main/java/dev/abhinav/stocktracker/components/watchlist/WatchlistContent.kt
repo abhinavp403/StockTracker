@@ -1,5 +1,6 @@
 package dev.abhinav.stocktracker.components.watchlist
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,17 +19,18 @@ import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.abhinav.stocktracker.model.WatchlistStock
+import dev.abhinav.stocktracker.ui.theme.GrayNeutral
+import dev.abhinav.stocktracker.ui.theme.GreenPositive
 
 @Composable
 fun WatchlistContent(
@@ -44,6 +47,8 @@ fun WatchlistContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+            .systemBarsPadding()
             .padding(horizontal = 16.dp)
     ) {
         // Search Bar
@@ -68,9 +73,8 @@ fun WatchlistContent(
                 ) {
                     Text(
                         text = "Your Watchlist",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     IconButton(
@@ -79,7 +83,7 @@ fun WatchlistContent(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.Sort,
                             contentDescription = "Sort",
-                            tint = Color(0xFF6B7280)
+                            tint = GrayNeutral
                         )
                     }
                 }
@@ -87,7 +91,7 @@ fun WatchlistContent(
                 if (lastUpdated != null) {
                     Text(
                         text = lastUpdated,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.bodySmall,
                         color = Color.Gray
                     )
                 }
@@ -104,7 +108,7 @@ fun WatchlistContent(
                     Icon(
                         imageVector = Icons.Default.Refresh,
                         contentDescription = "Refresh",
-                        tint = Color(0xFF10B981),
+                        tint = GreenPositive,
                         modifier = Modifier.size(20.dp)
                     )
                 }
@@ -115,9 +119,8 @@ fun WatchlistContent(
                 ) {
                     Text(
                         text = "${watchlistStocks.size} Assets",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF10B981),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = GreenPositive,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
                 }

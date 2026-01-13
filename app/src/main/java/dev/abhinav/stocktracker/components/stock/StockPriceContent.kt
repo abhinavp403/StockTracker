@@ -17,6 +17,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import dev.abhinav.stocktracker.ui.theme.GrayNeutral
+import dev.abhinav.stocktracker.ui.theme.GreenPositive
+import dev.abhinav.stocktracker.ui.theme.PinkRed
+import dev.abhinav.stocktracker.ui.theme.RedNegative
+import dev.abhinav.stocktracker.ui.theme.StockTrackerTheme
+import dev.abhinav.stocktracker.ui.theme.YellowGreen
 import dev.abhinav.stocktracker.util.Trend
 import dev.abhinav.stocktracker.viewmodel.StockUiState
 import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
@@ -29,16 +35,16 @@ fun StockPriceContent(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 16.dp)
+            .systemBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
         // Header Section
         Text(
             text = uiState.symbol,
-            fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black
+            style = MaterialTheme.typography.displayLarge,
+            color = MaterialTheme.colorScheme.onSurface
         )
 
         Row(
@@ -47,30 +53,28 @@ fun StockPriceContent(
         ) {
             Text(
                 text = uiState.currentPrice,
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.onSurface
             )
 
             Spacer(modifier = Modifier.width(12.dp))
 
             Surface(
                 shape = RoundedCornerShape(20.dp),
-                color = if (uiState.isPositive) Color(0xFFE8F741) else Color(0xFFFFCDD2)
+                color = if (uiState.isPositive) YellowGreen else PinkRed
             ) {
                 Text(
                     text = uiState.changePercent,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Color.Black,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                 )
             }
         }
 
         Text(
             text = "${uiState.companyName} • ${uiState.exchange}",
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.bodyMedium,
             color = Color.Gray,
             modifier = Modifier.padding(vertical = 4.dp)
         )
@@ -99,8 +103,7 @@ fun StockPriceContent(
         // Price History Header
         Text(
             text = "PRICE HISTORY",
-            fontSize = 13.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyMedium,
             color = Color(0xFF7D8B6B),
             letterSpacing = 1.sp,
             modifier = Modifier.padding(vertical = 8.dp)
@@ -139,13 +142,12 @@ fun TabButton(
         modifier = modifier,
         shape = RoundedCornerShape(12.dp),
         color = if (isSelected) Color(0xFF2D2D2D) else Color.White,
-        border = if (!isSelected) BorderStroke(1.dp, Color(0xFFE0E0E0)) else null,
+        border = if (!isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.outline) else null,
         onClick = onClick
     ) {
         Text(
             text = text,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyMedium,
             color = if (isSelected) Color.White else Color.Gray,
             modifier = Modifier.padding(vertical = 12.dp),
             textAlign = TextAlign.Center
@@ -160,9 +162,9 @@ fun TradingRecommendationCard(
     trend: Trend
 ) {
     val trendColor = when (trend) {
-        Trend.BULLISH -> Color(0xFF10B981)
-        Trend.BEARISH -> Color(0xFFEF4444)
-        Trend.NEUTRAL -> Color(0xFF6B7280)
+        Trend.BULLISH -> GreenPositive
+        Trend.BEARISH -> RedNegative
+        Trend.NEUTRAL -> GrayNeutral
     }
 
     val trendLabel = when (trend) {
@@ -174,7 +176,7 @@ fun TradingRecommendationCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.surfaceVariant,
         shadowElevation = 2.dp
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
@@ -221,13 +223,13 @@ fun TradingRecommendationCard(
                 PriceBlock(
                     label = "BEST BUY",
                     price = bestBuyPrice,
-                    priceColor = Color(0xFF10B981)
+                    priceColor = GreenPositive
                 )
 
                 PriceBlock(
                     label = "BEST SELL",
                     price = bestSellPrice,
-                    priceColor = Color(0xFFEF4444)
+                    priceColor = RedNegative
                 )
             }
 
@@ -276,36 +278,36 @@ private fun PriceBlock(
     Column {
         Text(
             text = label,
-            fontSize = 11.sp,
-            color = Color(0xFF8B9A7D),
-            fontWeight = FontWeight.SemiBold,
-            letterSpacing = 0.5.sp
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Text(
             text = price,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineMedium,
             color = priceColor,
             modifier = Modifier.padding(top = 4.dp)
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun StockPriceContentPreview() {
-    StockPriceContent(
-        uiState = StockUiState(
-            symbol = "TSLA",
-            currentPrice = "$650.00",
-            changePercent = "+2.5%",
-            isPositive = true,
-            companyName = "Tesla, Inc.",
-            exchange = "NASDAQ",
-            priceHistory = listOf(),
-            selectedTab = 0,
-            isLoading = false,
-            error = null
+    StockTrackerTheme {
+        StockPriceContent(
+            uiState = StockUiState(
+                symbol = "TSLA",
+                currentPrice = "$650.00",
+                changePercent = "+2.5%",
+                isPositive = true,
+                companyName = "Tesla, Inc.",
+                exchange = "NASDAQ",
+                priceHistory = listOf(),
+                selectedTab = 0,
+                isLoading = false,
+                error = null
+            )
         )
-    )
+    }
 }

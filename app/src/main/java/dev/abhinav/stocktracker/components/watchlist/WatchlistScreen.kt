@@ -42,7 +42,6 @@ fun WatchlistScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding()
     ) {
         when {
             uiState.isLoading && uiState.watchlistStocks.isEmpty() -> {

@@ -8,24 +8,24 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import dev.abhinav.stocktracker.model.DayPrice
+import dev.abhinav.stocktracker.ui.theme.StockTrackerTheme
 
 @Composable
 fun StockPriceCard(dayPrice: DayPrice) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
+        color = MaterialTheme.colorScheme.background,
         shadowElevation = 2.dp
     ) {
         Column(
@@ -40,14 +40,13 @@ fun StockPriceCard(dayPrice: DayPrice) {
                 Column {
                     Text(
                         text = dayPrice.day,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = dayPrice.label,
-                        fontSize = 13.sp,
-                        color = Color.Gray,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -60,21 +59,20 @@ fun StockPriceCard(dayPrice: DayPrice) {
                     ) {
                         Text(
                             text = if (dayPrice.isPositiveChange) "▲" else "▼",
-                            fontSize = 12.sp,
+                            style = MaterialTheme.typography.titleSmall,
                             color = if (dayPrice.isPositiveChange) Color(0xFF4CAF50) else Color(0xFFE53935),
                             modifier = Modifier.padding(end = 4.dp)
                         )
                         Text(
                             text = dayPrice.dailyChange,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
+                            style = MaterialTheme.typography.titleMedium,
                             color = if (dayPrice.isPositiveChange) Color(0xFF4CAF50) else Color(0xFFE53935)
                         )
                     }
                     Text(
                         text = "Daily Change",
-                        fontSize = 11.sp,
-                        color = Color.Gray,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp)
                     )
                 }
@@ -104,19 +102,24 @@ fun StockPriceCard(dayPrice: DayPrice) {
     }
 }
 
-@Preview
+@Preview(showBackground = true, name = "Light Mode")
+@Preview(showBackground = true, uiMode = android.content.res.Configuration.UI_MODE_NIGHT_YES, name = "Dark Mode")
 @Composable
 fun StockPriceCardPreview() {
-    val sampleDayPrice = DayPrice(
-        day = "Monday",
-        label = "Today",
-        open = "$1,200.00",
-        close = "$1,250.00",
-        high = "$1,260.00",
-        low = "$1,190.00",
-        date = "2024-06-10",
-        dailyChange = "+4.17%",
-        isPositiveChange = true
-    )
-    StockPriceCard(dayPrice = sampleDayPrice)
+    StockTrackerTheme {
+        Surface {
+            val sampleDayPrice = DayPrice(
+                day = "Monday",
+                label = "Today",
+                open = "$1,200.00",
+                close = "$1,250.00",
+                high = "$1,260.00",
+                low = "$1,190.00",
+                date = "2024-06-10",
+                dailyChange = "+4.17%",
+                isPositiveChange = true
+            )
+            StockPriceCard(dayPrice = sampleDayPrice)
+        }
+    }
 }

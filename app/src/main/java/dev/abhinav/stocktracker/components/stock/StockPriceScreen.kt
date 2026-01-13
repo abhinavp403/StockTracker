@@ -33,7 +33,6 @@ fun StockPriceScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .systemBarsPadding()
     ) {
         when {
             uiState.isLoading -> {

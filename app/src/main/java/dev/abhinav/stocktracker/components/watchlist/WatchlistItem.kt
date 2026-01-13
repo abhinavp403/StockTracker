@@ -16,6 +16,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.abhinav.stocktracker.model.WatchlistStock
+import dev.abhinav.stocktracker.ui.theme.GreenPositive
+import dev.abhinav.stocktracker.ui.theme.RedNegative
 
 @Composable
 fun WatchlistItem(
@@ -28,8 +30,8 @@ fun WatchlistItem(
             .fillMaxWidth()
             .clickable(onClick = onItemClick),
         shape = RoundedCornerShape(16.dp),
-        color = Color.White,
-        shadowElevation = 1.dp
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 2.dp
     ) {
         Row(
             modifier = Modifier
@@ -43,13 +45,12 @@ fun WatchlistItem(
             ) {
                 Text(
                     text = stock.symbol,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = stock.companyName,
-                    fontSize = 13.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     color = Color(0xFF868E96)
                 )
             }
@@ -64,7 +65,7 @@ fun WatchlistItem(
                     text = stock.price,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Surface(
@@ -75,7 +76,7 @@ fun WatchlistItem(
                         text = "${if (stock.isPositive) "↗" else "↘"} ${stock.changePercent}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = if (stock.isPositive) Color(0xFF10B981) else Color(0xFFEF4444),
+                        color = if (stock.isPositive) GreenPositive else RedNegative,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                     )
                 }
@@ -99,7 +100,7 @@ fun WatchlistItem(
                         Icon(
                             imageVector = Icons.Default.Remove,
                             contentDescription = "Remove",
-                            tint = Color(0xFF868E96),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(16.dp)
                         )
                     }
