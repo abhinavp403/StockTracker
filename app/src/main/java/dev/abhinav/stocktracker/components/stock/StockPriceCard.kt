@@ -1,5 +1,6 @@
 package dev.abhinav.stocktracker.components.stock
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +26,8 @@ fun StockPriceCard(dayPrice: DayPrice) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = 2.dp
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+        color = MaterialTheme.colorScheme.background
     ) {
         Column(
             modifier = Modifier.padding(20.dp)
