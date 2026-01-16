@@ -34,7 +34,6 @@ fun WatchlistScreen(
             onDismiss = { showSortSheet = false },
             onSortSelected = { option ->
                 viewModel.setSortOption(option)
-                showSortSheet = false
             }
         )
     }
