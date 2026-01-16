@@ -25,18 +25,15 @@ fun WatchlistItem(
     onRemoveClick: () -> Unit,
     onItemClick: () -> Unit
 ) {
-    Surface(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onItemClick),
-        shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.background,
-        shadowElevation = 2.dp
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .clickable(onClick = onItemClick)
+                .padding(horizontal = 16.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Stock Name and Symbol
@@ -107,6 +104,11 @@ fun WatchlistItem(
                 }
             }
         }
+
+        HorizontalDivider(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+        )
     }
 }
 
