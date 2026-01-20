@@ -2,11 +2,8 @@ package dev.abhinav.stocktracker.repository
 
 import dev.abhinav.stocktracker.model.StockPriceResponse
 import dev.abhinav.stocktracker.remote.ServiceApi
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class StockRepository @Inject constructor(
+class StockRepository(
     private val api: ServiceApi
 ) {
     // Calls api to get response

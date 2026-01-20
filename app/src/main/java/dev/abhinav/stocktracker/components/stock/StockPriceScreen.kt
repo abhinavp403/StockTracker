@@ -13,12 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StockPriceScreen(
-    viewModel: StockPriceHistoryViewModel,
     symbol: String,
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    viewModel: StockPriceHistoryViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

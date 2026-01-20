@@ -2,7 +2,6 @@ package dev.abhinav.stocktracker.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.WatchlistStock
 import dev.abhinav.stocktracker.repository.StockWatchlistRepository
 import dev.abhinav.stocktracker.util.SortOption
@@ -14,10 +13,8 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import javax.inject.Inject
 
-@HiltViewModel
-class StockWatchlistViewModel @Inject constructor(
+class StockWatchlistViewModel(
     private val repository: StockWatchlistRepository
 ) : ViewModel() {
 

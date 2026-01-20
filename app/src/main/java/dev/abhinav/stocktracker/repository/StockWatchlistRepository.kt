@@ -5,11 +5,8 @@ import dev.abhinav.stocktracker.database.WatchlistStockEntity
 import dev.abhinav.stocktracker.remote.ServiceApi
 import kotlinx.coroutines.flow.Flow
 import java.util.Calendar
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class StockWatchlistRepository @Inject constructor(
+class StockWatchlistRepository(
     private val api: ServiceApi,
     private val dao: WatchlistDao
 ) {

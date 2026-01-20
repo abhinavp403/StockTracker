@@ -8,12 +8,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import dev.abhinav.stocktracker.viewmodel.StockWatchlistViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WatchlistScreen(
-    viewModel: StockWatchlistViewModel,
-    onStockClick: (String) -> Unit = {}
+    onStockClick: (String) -> Unit = {},
+    viewModel: StockWatchlistViewModel = koinViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     var showSortSheet by remember { mutableStateOf(false) }

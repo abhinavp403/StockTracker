@@ -2,7 +2,6 @@ package dev.abhinav.stocktracker.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.abhinav.stocktracker.model.DayPrice
 import dev.abhinav.stocktracker.model.Ohlc
 import dev.abhinav.stocktracker.model.StockPriceResponseItem
@@ -17,10 +16,8 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.time.temporal.ChronoUnit
 import java.util.Locale
-import javax.inject.Inject
 
-@HiltViewModel
-class StockPriceHistoryViewModel @Inject constructor(
+class StockPriceHistoryViewModel(
     private val repository: StockRepository
 ) : ViewModel() {
 

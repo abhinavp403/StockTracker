@@ -16,7 +16,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import dev.abhinav.stocktracker.ui.theme.GrayNeutral
 import dev.abhinav.stocktracker.ui.theme.GreenPositive
 import dev.abhinav.stocktracker.ui.theme.PinkRed
@@ -26,11 +25,12 @@ import dev.abhinav.stocktracker.ui.theme.YellowGreen
 import dev.abhinav.stocktracker.util.Trend
 import dev.abhinav.stocktracker.viewmodel.StockUiState
 import dev.abhinav.stocktracker.viewmodel.StockPriceHistoryViewModel
+import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StockPriceContent(
     uiState: StockUiState,
-    viewModel: StockPriceHistoryViewModel = hiltViewModel()
+    viewModel: StockPriceHistoryViewModel = koinViewModel()
 ) {
     Column(
         modifier = Modifier
