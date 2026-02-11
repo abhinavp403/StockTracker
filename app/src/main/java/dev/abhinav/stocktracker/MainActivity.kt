@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import dev.abhinav.stocktracker.nav.StockAppNavigation
+import dev.abhinav.stocktracker.ui.navigation.StockAppNavigation
 import dev.abhinav.stocktracker.ui.theme.StockTrackerTheme
 
 class MainActivity : ComponentActivity() {

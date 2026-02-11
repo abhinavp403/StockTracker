@@ -1,8 +1,8 @@
 package dev.abhinav.stocktracker.di
 
 import androidx.room.Room
-import dev.abhinav.stocktracker.database.WatchlistDao
-import dev.abhinav.stocktracker.database.WatchlistDatabase
+import dev.abhinav.stocktracker.data.local.dao.WatchlistDao
+import dev.abhinav.stocktracker.data.local.database.WatchlistDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
