@@ -10,6 +10,9 @@ import dev.abhinav.stocktracker.util.Trend
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -25,51 +28,54 @@ class StockPriceViewModel(
     val uiState: StateFlow<StockUiState> = _uiState.asStateFlow()
 
     fun fetchStockData(symbol: String) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+        repository.getStockHistory(symbol)
+            .onStart {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+            }
+            .onEach { result ->
+                result.fold(
+                    onSuccess = { response ->
+                        if (response.isNotEmpty()) {
+                            val ohlcList = response.map {
+                                Ohlc(
+                                    open = it.open,
+                                    high = it.high,
+                                    low = it.low,
+                                    close = it.close
+                                )
+                            }
 
-            repository.getStockHistory(symbol).fold(
-                onSuccess = { response ->
-                    if (response.isNotEmpty()) {
-                        val ohlcList = response.map {
-                            Ohlc(
-                                open = it.open,
-                                high = it.high,
-                                low = it.low,
-                                close = it.close
-                            )
+                            val (bestBuy, bestSell, trend) =
+                                calculateBestBuySell(ohlcList, _uiState.value.selectedTab)
+
+                            _uiState.update {
+                                it.copy(
+                                    symbol = response[0].symbol,
+                                    currentPrice = formatPrice(response[0].close),
+                                    changePercent = formatPercent(response[0].changePercent),
+                                    isPositive = response[0].changePercent >= 0,
+                                    companyName = getCompanyName(response[0].symbol),
+                                    exchange = "NASDAQ",
+                                    priceHistory = mapToDayPrices(response.take(5)),
+                                    bestBuyPrice = formatPrice(bestBuy),
+                                    bestSellPrice = formatPrice(bestSell),
+                                    trend = trend,
+                                    isLoading = false
+                                )
+                            }
                         }
-
-                        val (bestBuy, bestSell, trend) =
-                            calculateBestBuySell(ohlcList, _uiState.value.selectedTab)
-
+                    },
+                    onFailure = { exception ->
                         _uiState.update {
                             it.copy(
-                                symbol = response[0].symbol,
-                                currentPrice = formatPrice(response[0].close),
-                                changePercent = formatPercent(response[0].changePercent),
-                                isPositive = response[0].changePercent >= 0,
-                                companyName = getCompanyName(response[0].symbol),
-                                exchange = "NASDAQ",
-                                priceHistory = mapToDayPrices(response.take(5)),
-                                bestBuyPrice = formatPrice(bestBuy),
-                                bestSellPrice = formatPrice(bestSell),
-                                trend = trend,
-                                isLoading = false
+                                isLoading = false,
+                                error = exception.message ?: "Unknown error occurred"
                             )
                         }
                     }
-                },
-                onFailure = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message ?: "Unknown error occurred"
-                        )
-                    }
-                }
-            )
-        }
+                )
+            }
+            .launchIn(viewModelScope)
     }
 
     private fun calculateBestBuySell(

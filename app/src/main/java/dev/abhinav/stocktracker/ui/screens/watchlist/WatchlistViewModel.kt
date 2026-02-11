@@ -8,6 +8,11 @@ import dev.abhinav.stocktracker.util.SortOption
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -29,8 +34,8 @@ class StockWatchlistViewModel(
     }
 
     private fun observeWatchlist() {
-        viewModelScope.launch {
-            repository.watchlistStocks.collect { entities ->
+        repository.watchlistStocks
+            .map { entities ->
                 val stocks = entities.map { entity ->
                     WatchlistStock(
                         symbol = entity.symbol,
@@ -43,18 +48,20 @@ class StockWatchlistViewModel(
 
                 val lastUpdateTime = entities.maxOfOrNull { it.lastUpdated }
                 val lastUpdateString = lastUpdateTime?.let {
-                    val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
-                    "Last updated: ${sdf.format(Date(it))}"
+                    lastUpdatedFormatted(it)
                 }
 
+                stocks to lastUpdateString
+            }
+            .onEach { (stocks, lastUpdated) ->
                 _uiState.update {
                     it.copy(
                         watchlistStocks = sortStocks(stocks, it.sortOption),
-                        lastUpdated = lastUpdateString
+                        lastUpdated = lastUpdated
                     )
                 }
             }
-        }
+            .launchIn(viewModelScope)
     }
 
     fun setSortOption(option: SortOption) {
@@ -90,53 +97,74 @@ class StockWatchlistViewModel(
     }
 
     fun refreshAllStocks() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            repository.refreshAllStocks(symbols).fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false) }
-                    println("Successfully refreshed all stocks")
-                },
-                onFailure = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = exception.message ?: "Failed to refresh stocks"
-                        )
+        repository.refreshAllStocks(symbols)
+            .onStart {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+            }
+            .onEach { result ->
+                result.fold(
+                    onSuccess = {
+                        _uiState.update { it.copy(isLoading = false) }
+                        println("Successfully refreshed all stocks")
+                    },
+                    onFailure = { exception ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = exception.message ?: "Failed to refresh stocks"
+                            )
+                        }
                     }
+                )
+            }
+            .catch { e ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Unexpected error"
+                    )
                 }
-            )
-        }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun addStock(symbol: String) {
-        viewModelScope.launch {
-            // Check if stock already exists
-            val exists = _uiState.value.watchlistStocks.any { it.symbol == symbol }
-            if (exists) {
-                _uiState.update {
-                    it.copy(error = "$symbol is already in your watchlist")
-                }
-                return@launch
+        val exists = _uiState.value.watchlistStocks.any { it.symbol == symbol }
+        if (exists) {
+            _uiState.update {
+                it.copy(error = "$symbol is already in your watchlist")
             }
-
-            _uiState.update { it.copy(isLoading = true, error = null) }
-
-            repository.refreshStockProfile(symbol).fold(
-                onSuccess = {
-                    _uiState.update { it.copy(isLoading = false) }
-                },
-                onFailure = { exception ->
-                    _uiState.update {
-                        it.copy(
-                            isLoading = false,
-                            error = "Failed to add stock"
-                        )
-                    }
-                }
-            )
+            return
         }
+
+        repository.refreshStockProfile(symbol)
+            .onStart {
+                _uiState.update { it.copy(isLoading = true, error = null) }
+            }
+            .onEach { result ->
+                result.fold(
+                    onSuccess = {
+                        _uiState.update { it.copy(isLoading = false) }
+                    },
+                    onFailure = { exception ->
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = exception.message ?: "Failed to add stock"
+                            )
+                        }
+                    }
+                )
+            }
+            .catch { e ->
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Unexpected error"
+                    )
+                }
+            }
+            .launchIn(viewModelScope)
     }
 
     fun clearError() {
@@ -156,6 +184,11 @@ class StockWatchlistViewModel(
     private fun formatPercent(percent: Double): String {
         val sign = if (percent >= 0) "+" else ""
         return "$sign${String.format("%.2f", percent)}%"
+    }
+
+    private fun lastUpdatedFormatted(time: Long): String {
+        val sdf = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.getDefault())
+        return "Last updated: ${sdf.format(Date(time))}"
     }
 }
 
